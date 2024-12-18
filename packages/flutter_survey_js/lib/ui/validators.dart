@@ -23,18 +23,69 @@ class NonEmptyValidator extends Validator<dynamic> {
   }
 }
 
+class MaxValidator<T> extends Validator<dynamic> {
+  final T max;
+
+  /// Constructs the instance of the validator.
+  ///
+  /// The argument [max] must not be null.
+  const MaxValidator(this.max) : super();
+
+  @override
+  Map<String, dynamic>? validate(AbstractControl<dynamic> control) {
+    final error = {
+      ValidationMessage.max: <String, dynamic>{
+        'max': max,
+        'actual': control.value,
+      },
+    };
+
+    assert(control.value is Comparable<dynamic>?);
+
+    final comparableValue = control.value as Comparable<dynamic>?;
+    return comparableValue == null || comparableValue.compareTo(max) <= 0
+        ? null
+        : error;
+  }
+}
+
+class MinValidator<T> extends Validator<dynamic> {
+  final T min;
+
+  /// Constructs the instance of the validator.
+  ///
+  /// The argument [min] must not be null.
+  const MinValidator(this.min) : super();
+
+  @override
+  Map<String, dynamic>? validate(AbstractControl<dynamic> control) {
+    final error = {
+      ValidationMessage.min: <String, dynamic>{
+        'min': min,
+        'actual': control.value,
+      },
+    };
+
+    assert(control.value is Comparable<dynamic>?);
+
+    final comparableValue = control.value as Comparable<dynamic>?;
+    return comparableValue == null || comparableValue.compareTo(min) >= 0
+        ? null
+        : error;
+  }
+}
+
 List<Validator> questionToValidators(s.Question question) {
   final res = <Validator>[];
-
   if (question.isRequired == true) {
     res.add(NonEmptyValidator());
   }
   if (question is s.Text) {
     if (question.min?.oneOf.value.tryCastToNum() != null) {
-      res.add(Validators.min(question.min!.oneOf.value.tryCastToNum()));
+      res.add(MinValidator(question.min!.oneOf.value.tryCastToNum()));
     }
     if (question.max?.oneOf.value.tryCastToNum() != null) {
-      res.add(Validators.max(question.max!.oneOf.value.tryCastToNum()));
+      res.add(MaxValidator(question.max!.oneOf.value.tryCastToNum()));
     }
   }
 
@@ -42,12 +93,12 @@ List<Validator> questionToValidators(s.Question question) {
   if (validators != null) {
     for (var value in validators) {
       if (value is s.Numericvalidator) {
-        res.add(Validators.number());
+        res.add(Validators.number(allowNull: true));
         if (value.maxValue != null) {
-          res.add(Validators.max(value.maxValue));
+          res.add(MaxValidator(value.maxValue));
         }
         if (value.minValue != null) {
-          res.add(Validators.min(value.minValue));
+          res.add(MinValidator(value.minValue));
         }
       }
       if (value is s.Textvalidator) {

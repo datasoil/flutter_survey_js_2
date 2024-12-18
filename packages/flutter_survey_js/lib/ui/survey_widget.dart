@@ -19,8 +19,11 @@ class SurveyWidget extends StatefulWidget {
   final FutureOr<void> Function(dynamic data)? onSubmit;
   final FutureOr<void> Function(dynamic data)? onErrors;
   final ValueSetter<Map<String, Object?>?>? onChange;
-
+  final SurveyElementBuilder? unsupportedElementBuilder;
+  final WidgetBuilder? separatorBuilder;
+  final SurveyTitleWidgetBuilder? titleBuilder;
   final SurveyController? controller;
+  final Map<String, String Function(Object)>? validationMessages;
   final WidgetBuilder? builder;
   final bool removingEmptyFields;
 
@@ -34,6 +37,10 @@ class SurveyWidget extends StatefulWidget {
     this.controller,
     this.builder,
     this.removingEmptyFields = true,
+    this.unsupportedElementBuilder,
+    this.separatorBuilder,
+    this.validationMessages,
+    this.titleBuilder,
   }) : super(key: key);
 
   @override
@@ -79,24 +86,30 @@ class SurveyWidgetState extends State<SurveyWidget> {
   @override
   Widget build(BuildContext context) {
     return SurveyConfiguration.copyAncestor(
+        unsupportedBuilder: widget.unsupportedElementBuilder,
+        titleBuilder: widget.titleBuilder,
+        separatorBuilder: widget.separatorBuilder,
         context: context,
-        child: ReactiveForm(
-          formGroup: formGroup,
-          child: StreamBuilder(
-            stream: formGroup.valueChanges,
-            builder: (BuildContext context,
-                AsyncSnapshot<Map<String, Object?>?> snapshot) {
-              return SurveyProvider(
-                survey: widget.survey,
-                formGroup: formGroup,
-                rootNode: rootNode,
-                currentPage: currentPage,
-                initialPage: initialPage,
-                child: Builder(
-                    builder: (context) =>
-                        (widget.builder ?? defaultBuilder)(context)),
-              );
-            },
+        child: ReactiveFormConfig(
+          validationMessages: widget.validationMessages ?? {},
+          child: ReactiveForm(
+            formGroup: formGroup,
+            child: StreamBuilder(
+              stream: formGroup.valueChanges,
+              builder: (BuildContext context,
+                  AsyncSnapshot<Map<String, Object?>?> snapshot) {
+                return SurveyProvider(
+                  survey: widget.survey,
+                  formGroup: formGroup,
+                  rootNode: rootNode,
+                  currentPage: currentPage,
+                  initialPage: initialPage,
+                  child: Builder(
+                      builder: (context) =>
+                          (widget.builder ?? defaultBuilder)(context)),
+                );
+              },
+            ),
           ),
         ));
   }

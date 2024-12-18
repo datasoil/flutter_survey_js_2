@@ -38,12 +38,36 @@ Widget defaultStepperBuilder(
   return Container();
 }
 
+Widget defaultSurveyFooterBuilder(
+    BuildContext context, int pageCount, int currentPage) {
+  final bool finished = currentPage >= pageCount - 1;
+  return Row(
+    mainAxisSize: MainAxisSize.max,
+    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    children: [
+      if (currentPage != 0)
+        ElevatedButton(
+          child: Text(S.of(context).previousPage),
+          onPressed: () =>
+              SurveyWidgetState.of(context).toPage(currentPage - 1),
+        ),
+      ElevatedButton(
+        child: Text(
+            finished ? S.of(context).submitSurvey : S.of(context).nextPage),
+        onPressed: () => SurveyWidgetState.of(context).nextPageOrSubmit(),
+      )
+    ],
+  );
+}
+
 class SurveyLayout extends StatefulWidget {
   final Widget Function(BuildContext context, s.Survey survey)?
       surveyTitleBuilder;
   final Widget Function(BuildContext context, int pageCount, int currentPage)?
       stepperBuilder;
   final Widget Function(BuildContext context, s.Page page)? pageBuilder;
+  final Widget Function(BuildContext context, int pageCount, int currentPage)?
+      surveyFooterBuilder;
   final EdgeInsets? padding;
 
   const SurveyLayout(
@@ -51,6 +75,7 @@ class SurveyLayout extends StatefulWidget {
       this.surveyTitleBuilder,
       this.stepperBuilder,
       this.pageBuilder,
+      this.surveyFooterBuilder,
       this.padding})
       : super(key: key);
 
@@ -132,14 +157,8 @@ class SurveyLayoutState extends State<SurveyLayout> {
                         latestUnfinished?.indexInPage ?? 0),
               ),
               // Next and Previous buttons.
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  if (currentPage != 0) previousButton(),
-                  nextButton()
-                ],
-              )
+              (widget.surveyFooterBuilder ?? defaultSurveyFooterBuilder)(
+                  context, pageCount, currentPage),
             ],
           ),
         ))
@@ -167,28 +186,6 @@ class SurveyLayoutState extends State<SurveyLayout> {
       physics: const NeverScrollableScrollPhysics(),
       itemBuilder: itemBuilder,
       itemCount: pages.length,
-    );
-  }
-
-  /// Returns the next button widget.
-  Widget nextButton() {
-    final bool finished = currentPage >= pageCount - 1;
-    return ElevatedButton(
-      child:
-          Text(finished ? S.of(context).submitSurvey : S.of(context).nextPage),
-      onPressed: () {
-        SurveyWidgetState.of(context).nextPageOrSubmit();
-      },
-    );
-  }
-
-  /// Returns the previous button widget.
-  Widget previousButton() {
-    return ElevatedButton(
-      child: Text(S.of(context).previousPage),
-      onPressed: () {
-        toPage(currentPage - 1);
-      },
     );
   }
 

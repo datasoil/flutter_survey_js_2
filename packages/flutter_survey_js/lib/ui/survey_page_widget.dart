@@ -10,11 +10,13 @@ import 'panel_title.dart';
 class SurveyPageWidget extends StatefulWidget {
   final s.Page page;
   final int initIndex;
+  final Widget Function(BuildContext context, Widget child)? containerBuilder;
 
   const SurveyPageWidget({
     Key? key,
     required this.page,
     this.initIndex = 0,
+    this.containerBuilder,
   }) : super(key: key);
 
   @override
@@ -83,8 +85,55 @@ class SurveyPageWidgetState extends State<SurveyPageWidget> {
     super.didUpdateWidget(oldWidget);
   }
 
+  Widget defaultContainerBuilder(
+    BuildContext context,
+    Widget child,
+  ) {
+    return Container(
+        padding: const EdgeInsets.only(left: 5.0, right: 5.0),
+        color: Colors.white,
+        child: child);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bodyChild = Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        if (widget.page.title != null || widget.page.description != null)
+          Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: PanelTitle(
+              panel: widget.page,
+              onTimeout: () {
+                setState(() {});
+              },
+            ),
+          ),
+        Expanded(
+          child: ScrollablePositionedList.separated(
+            physics: const ClampingScrollPhysics(),
+            itemCount: maxIndex,
+            itemScrollController: itemScrollController,
+            itemPositionsListener: itemPositionsListener,
+            itemBuilder: (context, index) {
+              if (index < widget.page.getElements().length && index >= 0) {
+                return SurveyConfiguration.of(context)!
+                    .factory
+                    .resolve(context, widget.page.getElements()[index]);
+              } else {
+                return Container(
+                  width: double.infinity,
+                );
+              }
+            },
+            separatorBuilder: (BuildContext context, int index) {
+              return SurveyConfiguration.of(context)!.separatorBuilder(context);
+            },
+          ),
+        ),
+      ],
+    );
     return Scaffold(
         floatingActionButton: _showBackToTopButton == false
             ? null
@@ -106,61 +155,8 @@ class SurveyPageWidgetState extends State<SurveyPageWidget> {
           onTap: () {
             WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
           },
-          child: Container(
-            padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-            color: Colors.white,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                const SizedBox(
-                  height: 5.0,
-                ),
-                if (widget.page.title != null ||
-                    widget.page.description != null)
-                  Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: PanelTitle(
-                      panel: widget.page,
-                      onTimeout: () {
-                        setState(() {});
-                      },
-                    ),
-                  ),
-                Expanded(
-                  child: ScrollablePositionedList.separated(
-                    physics: const ClampingScrollPhysics(),
-                    itemCount: maxIndex,
-                    itemScrollController: itemScrollController,
-                    itemPositionsListener: itemPositionsListener,
-                    itemBuilder: (context, index) {
-                      if (index < widget.page.getElements().length &&
-                          index >= 0) {
-                        return SurveyConfiguration.of(context)!.factory.resolve(
-                            context,
-                            widget
-                                .page.getElements()[index]);
-                      } else {
-                        return Container(
-                          width: double.infinity,
-                          // child: Image.asset(
-                          //   'assets/images/decision.jpg',
-                          //   fit: BoxFit.fill,
-                          // ),
-                        );
-                      }
-                    },
-                    separatorBuilder: (BuildContext context, int index) {
-                      return SurveyConfiguration.of(context)!
-                          .separatorBuilder(context);
-                    },
-                  ),
-                ),
-                const SizedBox(
-                  height: 45,
-                ) //: Container()
-              ],
-            ),
-          ),
+          child: (widget.containerBuilder ?? defaultContainerBuilder)(
+              context, bodyChild),
         ));
   }
 }

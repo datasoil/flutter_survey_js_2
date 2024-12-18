@@ -360,9 +360,9 @@ class ElementNode {
   ElementNode? findByElement({Object? rawElement, Elementbase? element}) {
     assert(rawElement != null || element != null);
     return findByCondition((node) {
-      final r =
-          (rawElement != null && identical(rawElement, node.rawElement)) ||
-              (element != null && identical(element, node.element));
+      final r = (rawElement != null &&
+              rawElement.hashCode == node.rawElement.hashCode) ||
+          (element != null && element.hashCode == node.element.hashCode);
       return r;
     });
   }
