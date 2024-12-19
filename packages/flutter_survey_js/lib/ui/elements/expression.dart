@@ -26,6 +26,7 @@ class ExpressionWidget extends StatelessWidget {
     final effectiveDecoration = const InputDecoration()
         .applyDefaults(Theme.of(context).inputDecorationTheme);
     final decoration = effectiveDecoration.copyWith(
+        fillColor: Colors.amber.shade50,
         errorText: getErrorTextFromFormControl(context, node.control!));
 
     if (node.expressionValue != node.control!.value) {
