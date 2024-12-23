@@ -21,7 +21,7 @@ dependencies:
   reactive_date_range_picker: ^2.1.0
   reactive_segmented_control: ^2.0.1
   reactive_advanced_switch: ^2.1.0
-  reactive_image_picker: ^5.0.1
+  reactive_image_picker: ^7.0.0
   implicitly_animated_reorderable_list_2: ^0.6.0
   flutter_colorpicker: ^1.0.3
   signature: ^5.3.2
@@ -43,7 +43,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   build_runner: ^2.3.3
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
   melos: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
