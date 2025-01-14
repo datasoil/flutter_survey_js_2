@@ -56,7 +56,7 @@ class VMRunner implements Runner {
     if (jsResult.isError) {
       throw Exception(jsResult.rawResult);
     }
-    return jsResult.rawResult;
+    return jsResult.stringResult;
   }
 
   @override
